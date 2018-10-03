@@ -41,14 +41,12 @@ L.add_edges_from(lit)
 LR = nx.Graph()
 LR.add_edges_from(litr)
 #%%
-
 def directed(A):
     for i in range(0,len(A)):
         for r in range(i+1,len(A)):
             if A[i][0] == A[r][1] and A[i][1] == A[r][0]:
                 return "SI"
     return "NO"
-
 
 def topologia(redes, edges): #dar vector con redes ordenadas y sus bases de datos
     
@@ -86,8 +84,40 @@ A = topologia([P,B,L,LR], [prot, bina, lit, litr])
 #%%
 tabla = pd.DataFrame({"Red":["Binarias","Proteicas","Literatura", "Literatura Regulada"],"# de nodos":A[0],"# total de enlaces":A[1],"Grado medio":A[2],"Coef. de Clust. red": A[6],"Dirigida?":A[9]})
 print(tabla)
+#%% #función para asignar si un nodo es esenecial o no para todas las redes al mismo tiempo
+def daresencialidad(redes, ess):
+    R = redes
+    esencial = []#np.empty_like((len(R), 1)) ##vamos a tener que usar un diccionario porque hay distinto numero de nodos
+    for i in range(len(R)):
+        D = dict()
+        a = list(R[i].nodes())
+        for j in range(len(a)):
+            D[j] = 0
+            for l in range(len(ess)):
+                if a[j] == ess[l]:
+                    D[j] = 1
+                    break
+        esencial.append(D)
+    
+    return esencial
+#%% #meto el atributo esencialidad en los nodos de cada red
+def atribuir(redes, ess):
+    R = redes
+    for i in range(len(R)):
+        for n,g in zip(R[i].nodes, daresencialidad(redes, ess)[i].values()):
+            R[i].nodes[n]['Esencialidad'] = g
 #%%
-for l in len(ess):
-    if 
+    #notas de metodos python
+for j in a:
+    for l in ess:
+        if j == ess:
+            D[j]
+    
+#%% CENTRALIDADES
+betweennes
+eigenvalues
+degree
+una mas
+#%%            
         
    
