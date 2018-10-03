@@ -104,8 +104,27 @@ def daresencialidad(redes, ess):
 def atribuir(redes, ess):
     R = redes
     for i in range(len(R)):
-        for n,g in zip(R[i].nodes, daresencialidad(redes, ess)[i].values()):
-            R[i].nodes[n]['Esencialidad'] = g
+        for n,e,g in zip(R[i].nodes, daresencialidad(redes, ess)[i].values(), [a[1] for a in list(R[i].degree())]):
+            R[i].nodes[n]['Esencialidad'] = e
+            R[i].nodes[n]['Grado'] = g
+            
+#%%
+atribuir([P,B,L,LR],ess)
+#%%
+#Esto me toma los nombres de los nodos de acuerdo a su grado de mayor a menor (de hubs a mas alejados de hubs)
+[a[0] for a in list(sorted(P.nodes.data(), key = lambda x: -x[1]['Grado']))]
+def eshub(redesconatributos, porcentajes,) #np.linspace(0,1,11)
+    porcion = []
+    R = redesconatributos
+    for i in range(len(R)):
+        #esencialidad = nx.get_node_attributes(R[i], 'Esencialidad')
+        for j,val in enumerate(porcentajes)
+            
+            for j in range(int(val*R[i].number_of_nodes())): #recorro del primero hasta el lugar que corresponde al porcentaje que me interesa, dentro de la lista de nodos
+                nodo, es = 
+
+#for nodo, atributo in sorted(R[i].nodes.data(), key = lambda x: x[1]['Grado'])
+
 #%%
     #notas de metodos python
 for j in a:
@@ -118,6 +137,9 @@ betweennes
 eigenvalues
 degree
 una mas
-#%%            
-        
+#%%
+G=nx.Graph()
+G.add_nodes_from([1,2,3],color='red')
+color=nx.get_node_attributes(G,'color')
+color[1]
    
