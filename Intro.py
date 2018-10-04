@@ -4,7 +4,6 @@ Created on Fri Sep 28 18:44:11 2018
 
 @author: Admin
 """
-
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -111,35 +110,24 @@ def atribuir(redes, ess):
 #%%
 atribuir([P,B,L,LR],ess)
 #%%
-#Esto me toma los nombres de los nodos de acuerdo a su grado de mayor a menor (de hubs a mas alejados de hubs)
-[a[0] for a in list(sorted(P.nodes.data(), key = lambda x: -x[1]['Grado']))]
-def eshub(redesconatributos, porcentajes,) #np.linspace(0,1,11)
-    porcion = []
+def eshub(redesconatributos, porcentajes): #np.linspace(0,1,11)
+    ess_percent = []  #aca voy a appendear los vectores para cada red, osea que va a tener len = len(R)
     R = redesconatributos
     for i in range(len(R)):
-        #esencialidad = nx.get_node_attributes(R[i], 'Esencialidad')
-        for j,val in enumerate(porcentajes)
-            
-            for j in range(int(val*R[i].number_of_nodes())): #recorro del primero hasta el lugar que corresponde al porcentaje que me interesa, dentro de la lista de nodos
-                nodo, es = 
-
-#for nodo, atributo in sorted(R[i].nodes.data(), key = lambda x: x[1]['Grado'])
+        a = []
+        for j,val in enumerate(porcentajes):
+            cant_nodos_esenciales = np.sum([a[1]['Esencialidad'] for a in list(sorted(R[i].nodes.data(),key = lambda x: -x[1]['Grado']))[0:int(val*R[i].number_of_nodes())]])
+            a.append(cant_nodos_esenciales/int(val*R[i].number_of_nodes())) #guardo el porcentaje de nodos esenciales hasta el número de nodos considerados como hubs por vez
+        ess_percent.append(a)
+    return ess_percent
 
 #%%
-    #notas de metodos python
-for j in a:
-    for l in ess:
-        if j == ess:
-            D[j]
-    
-#%% CENTRALIDADES
-betweennes
-eigenvalues
-degree
-una mas
-#%%
-G=nx.Graph()
-G.add_nodes_from([1,2,3],color='red')
-color=nx.get_node_attributes(G,'color')
-color[1]
-   
+#ess percent va a ser un vector con tantos vectores como redes
+plt.figure(1)
+
+plt.plot(porcentajes, ess_percent[0], label = '%s'%redesconatributos[0])
+plt.plot(porcentajes, ess_percent[1], label = '%s'%redesconatributos[1])   
+plt.plot(porcentajes, ess_percent[2], label = '%s'%redesconatributos[2])   
+plt.plot(porcentajes, ess_percent[3], label = '%s'%redesconatributos[3])   
+plt.grid(True)
+plt.legend()             
