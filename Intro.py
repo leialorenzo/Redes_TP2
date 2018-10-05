@@ -81,7 +81,7 @@ def topologia(redes, edges): #dar vector con redes ordenadas y sus bases de dato
 #%%
 A = topologia([P,B,L,LR], [prot, bina, lit, litr])
 #%%
-tabla = pd.DataFrame({"Red":["Binarias","Proteicas","Literatura", "Literatura Regulada"],"# de nodos":A[0],"# total de enlaces":A[1],"Grado medio":A[2],"Coef. de Clust. red": A[6],"Dirigida?":A[9]})
+tabla = pd.DataFrame({"Red":["Proteicas", "Binarias","Literatura", "Literatura Regulada"],"# de nodos":A[0],"# total de enlaces":A[1],"Grado medio":A[2],"Coef. de Clust. red": A[6],"Dirigida?":A[9]})
 print(tabla)
 #%% #función para asignar si un nodo es esenecial o no para todas las redes al mismo tiempo
 def daresencialidad(redes, ess):
@@ -116,18 +116,70 @@ def eshub(redesconatributos, porcentajes): #np.linspace(0,1,11)
     for i in range(len(R)):
         a = []
         for j,val in enumerate(porcentajes):
-            cant_nodos_esenciales = np.sum([a[1]['Esencialidad'] for a in list(sorted(R[i].nodes.data(),key = lambda x: -x[1]['Grado']))[0:int(val*R[i].number_of_nodes())]])
+            cant_nodos_esenciales = np.sum([b[1]['Esencialidad'] for b in list(sorted(R[i].nodes.data(),key = lambda x: -x[1]['Grado']))[0:int(val*R[i].number_of_nodes())]])
             a.append(cant_nodos_esenciales/int(val*R[i].number_of_nodes())) #guardo el porcentaje de nodos esenciales hasta el número de nodos considerados como hubs por vez
         ess_percent.append(a)
     return ess_percent
+#%%
+redesconatributos = [P,B,L,LR]
+porcentajes = np.concatenate([np.linspace(0.001,0.1,50), np.linspace(0.1,1,100)[1:]])
+
+ess_percent = eshub(redesconatributos, porcentajes)
+redes = ["Proteicas", "Binarias","Literatura", "Literatura Regulada"]
 
 #%%
 #ess percent va a ser un vector con tantos vectores como redes
 plt.figure(1)
-
-plt.plot(porcentajes, ess_percent[0], label = '%s'%redesconatributos[0])
-plt.plot(porcentajes, ess_percent[1], label = '%s'%redesconatributos[1])   
-plt.plot(porcentajes, ess_percent[2], label = '%s'%redesconatributos[2])   
-plt.plot(porcentajes, ess_percent[3], label = '%s'%redesconatributos[3])   
-plt.grid(True)
+plt.plot(porcentajes, ess_percent[0],'.-', label = '%s'%redes[0])
+plt.plot(porcentajes, ess_percent[1], '.-', label = '%s'%redes[1])   
+plt.plot(porcentajes, ess_percent[2], '.-',label = '%s'%redes[2])   
+plt.plot(porcentajes, ess_percent[3],'.-', label = '%s'%redes[3])   
+plt.ylim((0.1,1.1))
+plt.title('Relación Grado-esencialidad')
+plt.xlabel('Hub cut-off')
+plt.ylabel('Porcentaje de hubs esenciales')
 plt.legend()             
+plt.grid(True)
+#%%
+a = list(nx.betweenness_centrality(P))
+#%%
+def centralidades(redesND, redD):
+    R = redesND
+    R_GC = np.empty_like(R)
+    T = redD
+    
+    
+    for i in range(len(R_GC)):
+        R_GC[i] = max(nx.connected_component_subgraphs(R[i]), key=len)
+        for n,deg, eigen, between, current in zip(R_GC[i].nodes, list(nx.degree_centrality(R_GC[i]).values()), list(nx.eigenvector_centrality(R_GC[i]).values()), list(nx.betweenness_centrality(R_GC[i]).values()), list(nx.current_flow_betweenness_centrality(R_GC[i]).values())):
+            R_GC[i].nodes[n]['degree'] = deg
+            R_GC[i].nodes[n]['eigenvector'] = eigen
+            R_GC[i].nodes[n]['betweenness'] = between
+            R_GC[i].nodes[n]['current'] = current
+            
+    for j in range(len(T)):
+        T_GC = max(nx.connected_component_subgraphs(T), key=len)
+        for n,deg, eigen, between, current, degin, degout in zip(T_GC.nodes, list(nx.degree_centrality(T_GC).values()), list(nx.eigenvector_centrality(T_GC).values()), list(nx.betweenness_centrality(T_GC).values()), list(nx.current_flow_betweenness_centrality(T_GC).values()), list(nx.in_degree_centrality(T_GC).values()),  list(nx.out_degree_centrality(T_GC).values())):
+            T_GC[j].nodes[n]['degree'] = deg
+            T_GC[j].nodes[n]['eigenvector'] = eigen
+            T_GC[j].nodes[n]['betweenness'] = between
+            T_GC[j].nodes[n]['current'] = current
+            T_GC[j].nodes[n]['degree_in'] = degin
+            T_GC[j].nodes[n]['degree_out'] = degout
+      
+#%%
+def centralidades2(redes):
+    R = redes
+    R_GC = np.empty_like(R)
+    
+    for i in range(len(R_GC)):
+        R_GC[i] = max(nx.connected_component_subgraphs(R[i]), key=len)
+        for n,deg, eigen, between, current in zip(R_GC[i].nodes, list(nx.degree_centrality(R_GC[i]).values()), list(nx.eigenvector_centrality(R_GC[i]).values()), list(nx.betweenness_centrality(R_GC[i]).values()), list(nx.current_flow_betweenness_centrality(R_GC[i]).values())):
+            R_GC[i].nodes[n]['degree'] = deg
+            R_GC[i].nodes[n]['eigenvector'] = eigen
+            R_GC[i].nodes[n]['betweenness'] = between
+            R_GC[i].nodes[n]['current'] = current
+#%%
+for j in range(len(R))
+    for i, value in enumerate(list(sorted(R[j].nodes.data(),key = lambda x: -x[1]['Esencialidad']))
+        
