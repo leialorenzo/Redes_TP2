@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Oct  5 18:46:58 2018
+
+@author: camilo
+"""
+
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+#
+def ldata(archive):
+    f=open(archive)
+    data=[]
+    for line in f:
+        line=line.strip()
+        col=line.split()
+        data.append(col)
+    return data
+
+APMS_data = ldata('yeast_AP-MS.txt')
+LIT_data = ldata('yeast_LIT.txt')
+LIT_Reguly_data = ldata('yeast_LIT_Reguly.txt')
+Y2H_data = ldata('yeast_Y2H.txt')
+ess_data = ldata('Essential_ORFs_paperHe.txt')
+
+#Primero me interesa ver las propiedaddes estructurales de las redes de 
+#interacción de proteínas
+ess = [a[1] for a in ess_data[2:1158]]
+litr = [a[0:2] for a in LIT_Reguly_data[1:]]
+#Genero los grafost
+yeastY2H = nx.Graph(Y2H_data)
+yeastLIT = nx.Graph(LIT_data)
+yeastAPMS = nx.Graph(APMS_data)
+yeastLIT_Reguly = nx.Graph(litr)
+
+y2h = yeastY2H.to_undirected()
+lit = yeastLIT.to_undirected()
+apms = yeastAPMS.to_undirected()
+reg = yeastLIT_Reguly.to_undirected()
+
+y2h_e = list(y2h.edges())
+lit_e = list(lit.edges())
+apms_e = list(apms.edges())
+reg_e = list(reg.edges())
+
+def overlap2(A,B):
+    m = 0
+    for nodo_a in A:
+        for nodo_b in B:
+            flag = 0
+            if nodo_a[0] == nodo_b[0] and nodo_a[1] == nodo_b[1]:
+                flag = 1
+            if nodo_a[0] == nodo_b[1] and nodo_a[1] == nodo_b[0]:
+                flag = 1
+            m = m + flag
+    return m/float(len(A))
+
+ovlp_Y2H_w_LIT = overlap2(y2h_e,lit_e) #fracción de interacciones en Y2H que aparecen en LIT
+ovlp_Y2H_w_APMS = overlap2(y2h_e,apms_e)
+ovlp_Y2H_w_reguly = overlap2(y2h_e,reg_e)
+#ovlp_Y2H_w_ess = overlap2(Y2H_data,ess_data)
+
+ovlp_LIT_w_Y2H = overlap2(lit_e,y2h_e) #fracción de interacciones en LIT que aparecen en Y2H
+ovlp_LIT_w_APMS = overlap2(lit_e,apms_e) #f
+ovlp_LIT_w_reguly = overlap2(lit_e,reg_e)
+#ovlp_LIT_w_ess = overlap2(LIT_data,ess_data)
+
+ovlp_APMS_w_Y2H = overlap2(apms_e,y2h_e)
+ovlp_APMS_w_LIT = overlap2(apms_e,lit_e)
+ovlp_APMS_w_reguly = overlap2(apms_e,reg_e)
+#ovlp_APMS_w_ess = overlap2(APMS_data,Y2H_data)
+
+ovlp_reguly_w_Y2H = overlap2(reg_e,y2h_e)
+ovlp_reguly_w_LIT = overlap2(reg_e,lit_e)
+ovlp_reguly_w_APMS = overlap2(reg_e,apms_e)
+#ovlp_reguly_w_ess = overlap2(LIT_Reguly_data, ess_data)
+
+#ovlp_ess_w_Y2H = overlap2(reg_e,y2h_e)
+#ovlp_ess_w_LIT = overlap2(reg_e,lit_e)
+#ovlp_ess_w_APMS = overlap2(reg_e,apms)
+##ovlp_ess_w_reguly = overlap2(LIT_Reguly_data, ess_data)
+
+firstcol = ['Y2H',ovlp_Y2H_w_LIT,ovlp_Y2H_w_APMS,ovlp_Y2H_w_reguly];
+secondcol = [ovlp_LIT_w_APMS,'LIT',ovlp_LIT_w_APMS, ovlp_LIT_w_reguly];
+thirdcol = [ovlp_APMS_w_Y2H, ovlp_APMS_w_LIT, 'APMS', ovlp_APMS_w_reguly];
+fourthcol = [ovlp_reguly_w_Y2H,ovlp_reguly_w_LIT,ovlp_reguly_w_APMS,'Reguly'];
+#fifthcol = [ovlp_ess_w_Y2H,ovlp_ess_w_LIT,ovlp_ess_w_APMS, ovlp_ess_w_reguly,'Essentials'];
+
+tabla_overlaps = pd.DataFrame({"1":firstcol,"2":secondcol,"3":thirdcol,"4":fourthcol})
+
+#%%%
+
