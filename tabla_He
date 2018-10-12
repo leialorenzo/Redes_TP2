@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct 10 17:43:03 2018
+
+@author: camilo
+"""
+
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+#
+def ldata(archive):
+    f=open(archive)
+    data=[]
+    for line in f:
+        line=line.strip()
+        col=line.split()
+        data.append(col)
+    return data
+
+APMS_data = ldata('yeast_AP-MS.txt')
+LIT_data = ldata('yeast_LIT.txt')
+LIT_Reguly_data = ldata('yeast_LIT_Reguly.txt')
+Y2H_data = ldata('yeast_Y2H.txt')
+ess_data = ldata('Essential_ORFs_paperHe.txt')
+
+ess = [a[1] for a in ess_data[2:1158]]
+litr = [a[0:2] for a in LIT_Reguly_data[1:]]
+
+yeastY2H = nx.Graph(Y2H_data)
+yeastLIT = nx.Graph(LIT_data)
+yeastAPMS = nx.Graph(APMS_data)
+yeastLIT_Reguly = nx.Graph(litr)
+
+y2h = yeastY2H.to_undirected()
+lit = yeastLIT.to_undirected()
+apms = yeastAPMS.to_undirected()
+reg = yeastLIT_Reguly.to_undirected()
+
+#Defino una función para obtener el gráfico de ln(1-PE) en función de k
+def tabla2(red,esen): #red es un grafo, esen es una lista de proteínas esenciales
+    nodos = list(red.degree()) #lista de tuplas (nodos,grado)
+    
+    esenciales = [elemento for elemento,grado in nodos if elemento in esen] #Lista de proteinas esenciales que está en la red
+    deg_dict = dict(red.degree()) #Diccionario nodo: grado
+    grados_esenciales = {e:deg_dict[e] for e in esenciales} #Diccionario nodo esencial: grado que tiene
+    
+    esenciales_k_distribucion = {k:0 for k in set(grados_esenciales.values())}
+    for k in grados_esenciales.values():
+        esenciales_k_distribucion[k] += 1
+        
+    totales_k_distribucion = {k:0 for k in set(deg_dict.values())}
+    for j in deg_dict.values():
+        totales_k_distribucion[j] += 1
+        
+    
+    distr_esenciales =  list(esenciales_k_distribucion.values())
+    distr_totales = list(totales_k_distribucion.values())
+    dicc_final = {}
+    distr_final = {}
+    for m in esenciales_k_distribucion.keys():
+        dicc_final[m] = esenciales_k_distribucion[m]/totales_k_distribucion[m]
+    
+    for m in dicc_final.keys():
+        if m<10:
+            distr_final[m] = dicc_final[m]
+            
+    return distr_final
+
+dicc_y2h = tabla2(y2h,ess)
+dicc_lit = tabla2(lit,ess)
+dicc_apms = tabla2(apms,ess)
+dicc_reg = tabla2(reg,ess)
+
+def ploteo(diccionario):
+    
+    diccionario_keys = list(diccionario.keys())
+    diccionario_values = list(diccionario.values())
+    y = np.zeros(len(diccionario_values))
+    for i in range(0,len(y)):
+        y[i] = np.log(1-float(diccionario_values[i]))
+
+    x = diccionario.keys()
+    return plt.plot(x,y,'.')
+
+ploteo(dicc_y2h)
+plt.show()
+
+ploteo(dicc_lit)
+plt.show()
+
+ploteo(dicc_apms)
+plt.show()
+
+ploteo(dicc_reg)
+plt.show()
+
+
+
+#a = nodos de la red
+#b = nodos esenciales
+#for l in range(len(a))
+#        C=[]
+#        for m in range(len(b)):
+#            if a[l] == b[m]:
+                C.append((a[l]))
+        
+
+            
+            
+    
+    
+            
+        
+        
+        
+    
