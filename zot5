@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct 10 18:13:51 2018
+
+@author: Felipe
+"""
+
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import scipy as sp
+import pandas as pd
+#
+def ldata(archive):
+    f=open(archive)
+    data=[]
+    for line in f:
+        line=line.strip()
+        col=line.split()
+        data.append(col)
+    return data
+
+APMS_data = ldata('yeast_AP-MS.txt')
+LIT_data = ldata('yeast_LIT.txt')
+LIT_Reguly_data = ldata('yeast_LIT_Reguly.txt')
+Y2H_data = ldata('yeast_Y2H.txt')
+ess_data = ldata('Essential_ORFs_paperHe.txt')
+
+ess = [a[1] for a in ess_data[2:1158]]
+litr = [a[0:2] for a in LIT_Reguly_data[1:]]    
+
+def selfint(A): #parece que hay alunos elementos de la diagonal de adj que son nulos y otros no...
+    m=0
+    for i in range(0,len(A)):
+        if A[i][0]==A[i][1]:
+            m=m+1
+    print(m)
+
+def nodos_nolink(A):
+    graph=nx.Graph(A)
+    und=graph.to_undirected()
+#    edges=list(und.edges())
+    nodes=list(und.nodes())
+    adj=nx.to_numpy_array(und)
+    pv=np.matmul(adj,adj) #adjacencia al cuadrado me da vecinos de vecinos. matmul me hace producto matricial
+    pares = pv*(1-adj) # aca * hace producto posicion a posicion (no matricial).
+                  #tiene ceros cuando no cumplo condicion no link primero pero link segundo, y el numero  de primeros vecinos que comparten cuando cumple
+    
+    return nodes,pares
+
+def conteo(A,k,B): #quiero contar pares totales y del mismo tipo. A es lista de interacciones, k grado minimo de pv para contar, B la lista de prot esenciales
+    [a,b] = nodos_nolink(A)
+    D=[] #aca voy a meter la lista de tuplas que cumplen
+    for i in range(0,len(b)):
+        for j in range (i+1, len(b)): #pongo +1 porque no quiero los elementos de la diagonal
+            if b[i][j] >= k:
+                D.append([a[i],a[j]])
+    tot=len(D)
+    F=dict() 
+    toteq=0
+    for l in range(len(a)):
+        C=[]
+        for m in range (len(B)):
+            if a[l]==B[m]:
+                C.append(a[l])
+        if len(C)>0:
+            F[a[l]]=1
+        else:
+            F[a[l]]=0
+    for i in range(0,tot):
+        flag=0
+        if F[D[i][0]]==F[D[i][1]]:
+            flag=1
+        toteq=toteq+flag
+    
+
+    return tot,toteq
+
+pares_y2h = conteo(Y2H_data,3,ess)
+pares_apms = conteo(APMS_data,3,ess)
+pares_lit = conteo(LIT_data,3,ess)
+pares_reguly = conteo(litr,3,ess)
+
+tabla_pares=pd.DataFrame({" ":['Y2H','AP-MS','Literatura','Reguly'],"pares totales":[pares_y2h[0],pares_apms[0],pares_lit[0],pares_reguly[0]],"pares iguales":[pares_y2h[1],pares_apms[1],pares_lit[1],pares_reguly[1]]})
