@@ -135,13 +135,11 @@ plt.plot(porcentajes, ess_percent[1], '.-', label = '%s'%redes[1])
 plt.plot(porcentajes, ess_percent[2], '.-',label = '%s'%redes[2])   
 plt.plot(porcentajes, ess_percent[3],'.-', label = '%s'%redes[3])   
 plt.ylim((0.1,1.1))
-plt.title('Relación Grado-esencialidad')
+plt.title('Relación Grado-Esencialidad')
 plt.xlabel('Hub cut-off')
 plt.ylabel('Porcentaje de hubs esenciales')
 plt.legend()             
 plt.grid(True)
-#%%
-a = list(nx.betweenness_centrality(P))
 #%%
 def centralidades(redesND, redD):
     R = redesND
@@ -168,6 +166,7 @@ def centralidades(redesND, redD):
             T_GC[j].nodes[n]['degree_out'] = degout
       
 #%%
+redes_analisis = [P,B,L,LR.to_undirected()]
 def centralidades2(redes):
     R = redes
     R_GC = np.empty_like(R)
@@ -179,7 +178,27 @@ def centralidades2(redes):
             R_GC[i].nodes[n]['eigenvector'] = eigen
             R_GC[i].nodes[n]['betweenness'] = between
             R_GC[i].nodes[n]['current'] = current
+    return R_GC
 #%%
-for j in range(len(R))
-    for i, value in enumerate(list(sorted(R[j].nodes.data(),key = lambda x: -x[1]['Esencialidad']))
-        
+R_GC = centralidades2(redes_analisis)
+#%%
+nodes = np.empty((4,len(R_GC)), dtype= object) #aca se van a guardar los nombres de los nodos a eliminar en cada caso(para cada centralidad)
+for i in range(len(R_GC)):
+    largo = int(np.sum([c[1]['Esencialidad'] for c in list(R_GC[i].nodes.data())]))
+    nodes[0,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['degree']))][0:largo]
+    nodes[1,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['eigenvector']))][0:largo]
+    nodes[2,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['betweenness']))][0:largo]
+    nodes[3,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['current']))][0:largo]
+#%%
+percent = np.linspace(0,1,101)
+tamaños = np.empty((len(R_GC),len(percent),4)) #aca voy a poner el tamaño de la componente gigante del grafo en cada caso, con los valores de cada red en columnas
+                                             #osea que la primera columna tendra el tamaño de la componente gigante habiendo sacado nada, 005% etc...
+for i in range(len(R_GC)):
+    tamaños[i,0,:] = max(nx.connected_component_subgraphs(R_GC[i]), key=len).number_of_nodes()
+    for n, val in enumerate(percent[1:]):
+        for j in range(4):
+            red = R_GC[i].copy()  
+            red.remove_nodes_from(nodes[j,i][0:int(val*len(nodes[j,i]))])
+            tamaños[i,n+1,j] = max(nx.connected_component_subgraphs(red[i]), key=len).number_of_nodes()
+            
+    
