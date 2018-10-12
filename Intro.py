@@ -125,7 +125,7 @@ redesconatributos = [P,B,L,LR]
 porcentajes = np.concatenate([np.linspace(0.001,0.1,50), np.linspace(0.1,1,100)[1:]])
 
 ess_percent = eshub(redesconatributos, porcentajes)
-redes = ["Proteicas", "Binarias","Literatura", "Literatura Regulada"]
+redes = ["Proteicas", "Binarias","Literatura", "Literatura Reguly"]
 
 #%%
 #ess percent va a ser un vector con tantos vectores como redes
@@ -141,29 +141,29 @@ plt.ylabel('Porcentaje de hubs esenciales')
 plt.legend()             
 plt.grid(True)
 #%%
-def centralidades(redesND, redD):
-    R = redesND
-    R_GC = np.empty_like(R)
-    T = redD
-    
-    
-    for i in range(len(R_GC)):
-        R_GC[i] = max(nx.connected_component_subgraphs(R[i]), key=len)
-        for n,deg, eigen, between, current in zip(R_GC[i].nodes, list(nx.degree_centrality(R_GC[i]).values()), list(nx.eigenvector_centrality(R_GC[i]).values()), list(nx.betweenness_centrality(R_GC[i]).values()), list(nx.current_flow_betweenness_centrality(R_GC[i]).values())):
-            R_GC[i].nodes[n]['degree'] = deg
-            R_GC[i].nodes[n]['eigenvector'] = eigen
-            R_GC[i].nodes[n]['betweenness'] = between
-            R_GC[i].nodes[n]['current'] = current
-            
-    for j in range(len(T)):
-        T_GC = max(nx.connected_component_subgraphs(T), key=len)
-        for n,deg, eigen, between, current, degin, degout in zip(T_GC.nodes, list(nx.degree_centrality(T_GC).values()), list(nx.eigenvector_centrality(T_GC).values()), list(nx.betweenness_centrality(T_GC).values()), list(nx.current_flow_betweenness_centrality(T_GC).values()), list(nx.in_degree_centrality(T_GC).values()),  list(nx.out_degree_centrality(T_GC).values())):
-            T_GC[j].nodes[n]['degree'] = deg
-            T_GC[j].nodes[n]['eigenvector'] = eigen
-            T_GC[j].nodes[n]['betweenness'] = between
-            T_GC[j].nodes[n]['current'] = current
-            T_GC[j].nodes[n]['degree_in'] = degin
-            T_GC[j].nodes[n]['degree_out'] = degout
+#def centralidades(redesND, redD):
+#    R = redesND
+#    R_GC = np.empty_like(R)
+#    T = redD
+#    
+#    
+#    for i in range(len(R_GC)):
+#        R_GC[i] = max(nx.connected_component_subgraphs(R[i]), key=len)
+#        for n,deg, eigen, between, current in zip(R_GC[i].nodes, list(nx.degree_centrality(R_GC[i]).values()), list(nx.eigenvector_centrality(R_GC[i]).values()), list(nx.betweenness_centrality(R_GC[i]).values()), list(nx.current_flow_betweenness_centrality(R_GC[i]).values())):
+#            R_GC[i].nodes[n]['degree'] = deg
+#            R_GC[i].nodes[n]['eigenvector'] = eigen
+#            R_GC[i].nodes[n]['betweenness'] = between
+#            R_GC[i].nodes[n]['current'] = current
+#            
+#    for j in range(len(T)):
+#        T_GC = max(nx.connected_component_subgraphs(T), key=len)
+#        for n,deg, eigen, between, current, degin, degout in zip(T_GC.nodes, list(nx.degree_centrality(T_GC).values()), list(nx.eigenvector_centrality(T_GC).values()), list(nx.betweenness_centrality(T_GC).values()), list(nx.current_flow_betweenness_centrality(T_GC).values()), list(nx.in_degree_centrality(T_GC).values()),  list(nx.out_degree_centrality(T_GC).values())):
+#            T_GC[j].nodes[n]['degree'] = deg
+#            T_GC[j].nodes[n]['eigenvector'] = eigen
+#            T_GC[j].nodes[n]['betweenness'] = between
+#            T_GC[j].nodes[n]['current'] = current
+#            T_GC[j].nodes[n]['degree_in'] = degin
+#            T_GC[j].nodes[n]['degree_out'] = degout
       
 #%%
 redes_analisis = [P,B,L,LR.to_undirected()]
@@ -184,21 +184,103 @@ R_GC = centralidades2(redes_analisis)
 #%%
 nodes = np.empty((4,len(R_GC)), dtype= object) #aca se van a guardar los nombres de los nodos a eliminar en cada caso(para cada centralidad)
 for i in range(len(R_GC)):
-    largo = int(np.sum([c[1]['Esencialidad'] for c in list(R_GC[i].nodes.data())]))
+    largo = max(nx.connected_component_subgraphs(R_GC[i]), key=len).number_of_nodes()#int(np.sum([c[1]['Esencialidad'] for c in list(R_GC[i].nodes.data())]))
     nodes[0,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['degree']))][0:largo]
     nodes[1,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['eigenvector']))][0:largo]
     nodes[2,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['betweenness']))][0:largo]
     nodes[3,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['current']))][0:largo]
 #%%
-percent = np.linspace(0,1,101)
-tamaños = np.empty((len(R_GC),len(percent),4)) #aca voy a poner el tamaño de la componente gigante del grafo en cada caso, con los valores de cada red en columnas
+percent = np.linspace(0,0.99,100)
+tamaños = np.empty((len(R_GC),len(percent),4),dtype= object) #aca voy a poner el tamaño de la componente gigante del grafo en cada caso, con los valores de cada red en columnas
                                              #osea que la primera columna tendra el tamaño de la componente gigante habiendo sacado nada, 005% etc...
 for i in range(len(R_GC)):
-    tamaños[i,0,:] = max(nx.connected_component_subgraphs(R_GC[i]), key=len).number_of_nodes()
+    tamaños[i,0,:] = max(nx.connected_component_subgraphs(R_GC[i]), key=len).number_of_nodes() #innecesario porque R_GC ya es la componente gigante
     for n, val in enumerate(percent[1:]):
-        for j in range(4):
-            red = R_GC[i].copy()  
+       for j in range(4):
+            red = R_GC[i].copy()
             red.remove_nodes_from(nodes[j,i][0:int(val*len(nodes[j,i]))])
-            tamaños[i,n+1,j] = max(nx.connected_component_subgraphs(red[i]), key=len).number_of_nodes()
-            
+            tamaños[i,n+1,j] = int(max(nx.connected_component_subgraphs(red), key=len).number_of_nodes())
+#%%
+nodos_esenciales = []
+tamaño = []
+
+for i in range(len(R_GC)):
+    red = R_GC[i].copy()
+    red_random =  R_GC[i].copy()
     
+    nodos_esenciales.append([b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['Esencialidad']))][0:np.sum([c[1]['Esencialidad'] for c in list(R_GC[i].nodes.data())])])
+    nodos_random.append()
+    
+    red.remove_nodes_from(nodos_esenciales[i])
+    tamaño.append(int(max(nx.connected_component_subgraphs(red), key=len).number_of_nodes()))
+    
+    red_random.remove_nodes_from()
+    tamaño_random.append()
+#%%
+from random import shuffle
+
+nodos_random = np.empty((len(R_GC),len(percent)), dtype = object)
+tamaño_random = np.empty((len(R_GC),len(percent)), dtype = object)
+
+for i in range(len(R_GC)):
+    tamaño_random[i,0] = R_GC[i].number_of_nodes()
+    for n, val in enumerate(percent[1:]):
+        red_random =  R_GC[i].copy()
+        nodos_random = list(R_GC[i].nodes())[0:int(val*R_GC[i].number_of_nodes())]
+        shuffle(nodos_random)
+        red_random.remove_nodes_from(nodos_random)
+        tamaño_random[i,n+1] = int(max(nx.connected_component_subgraphs(red_random), key=len).number_of_nodes())
+#%% Grafico del efecto de eliminar nodos con distintos valores de conectividad
+plt.figure(1, figsize=(15,10))
+plt.subplot(221)
+plt.title('Protéicas')
+plt.xlabel('Fracción de nodos')
+plt.ylabel('Fracción de componente gigante')
+plt.plot(percent, tamaños[0,:,0]/tamaños[0,0,0], label = 'Grado')
+plt.plot(percent, tamaños[0,:,1]/tamaños[0,0,1], label = 'Autovector')
+plt.plot(percent, tamaños[0,:,2]/tamaños[0,0,2], label = 'Betweenness')
+plt.plot(percent, tamaños[0,:,3]/tamaños[0,0,3], label = 'Corriente')
+plt.plot(percent, tamaño_random[0,:]/tamaño_random[0,0], label = 'Azar')
+plt.plot(np.sum([c[1]['Esencialidad'] for c in list(R_GC[0].nodes.data())])/R_GC[0].number_of_nodes(),tamaño[0]/R_GC[0].number_of_nodes(), 'd')
+plt.grid(True)
+plt.legend()
+
+plt.subplot(222)
+plt.title('Binarias')
+plt.xlabel('Fracción de nodos')
+plt.ylabel('Fracción de componente gigante')
+plt.plot(percent, tamaños[1,:,0]/tamaños[1,0,0], label = 'Grado')
+plt.plot(percent, tamaños[1,:,1]/tamaños[1,0,1], label = 'Autovector')
+plt.plot(percent, tamaños[1,:,2]/tamaños[1,0,2], label = 'Betweenness')
+plt.plot(percent, tamaños[1,:,3]/tamaños[1,0,3], label = 'Corriente')
+plt.plot(percent, tamaño_random[1,:]/tamaño_random[1,0], label = 'Azar')
+plt.plot(np.sum([c[1]['Esencialidad'] for c in list(R_GC[1].nodes.data())])/R_GC[1].number_of_nodes(),tamaño[1]/R_GC[1].number_of_nodes(), 'd')
+plt.grid(True)
+plt.legend()
+
+plt.subplot(223)
+plt.title('Literatura')
+plt.xlabel('Fracción de nodos')
+plt.ylabel('Fracción de componente gigante')
+plt.plot(percent, tamaños[2,:,0]/tamaños[2,0,0], label = 'Grado')
+plt.plot(percent, tamaños[2,:,1]/tamaños[2,0,1], label = 'Autovector')
+plt.plot(percent, tamaños[2,:,2]/tamaños[2,0,2], label = 'Betweenness')
+plt.plot(percent, tamaños[2,:,3]/tamaños[2,0,3], label = 'Corriente')
+plt.plot(percent, tamaño_random[1,:]/tamaño_random[1,0], label = 'Azar')
+plt.plot(np.sum([c[1]['Esencialidad'] for c in list(R_GC[2].nodes.data())])/R_GC[2].number_of_nodes(),tamaño[2]/R_GC[2].number_of_nodes(), 'd')
+plt.grid(True)
+plt.legend()
+
+plt.subplot(224)
+plt.title('Literatura Reguly')
+plt.xlabel('Fracción de nodos')
+plt.ylabel('Fracción de componente gigante')
+plt.plot(percent, tamaños[3,:,0]/tamaños[3,0,0], label = 'Grado')
+plt.plot(percent, tamaños[3,:,1]/tamaños[3,0,1], label = 'Autovector')
+plt.plot(percent, tamaños[3,:,2]/tamaños[3,0,2], label = 'Betweenness')
+plt.plot(percent, tamaños[3,:,3]/tamaños[3,0,3], label = 'Corriente')
+plt.plot(percent, tamaño_random[1,:]/tamaño_random[1,0], label = 'Azar')
+plt.plot(np.sum([c[1]['Esencialidad'] for c in list(R_GC[3].nodes.data())])/R_GC[3].number_of_nodes(),tamaño[3]/R_GC[3].number_of_nodes(), 'd')
+plt.grid(True)
+plt.legend()
+#%%
