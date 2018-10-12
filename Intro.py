@@ -190,7 +190,7 @@ for i in range(len(R_GC)):
     nodes[2,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['betweenness']))][0:largo]
     nodes[3,i] = [b[0] for b in list(sorted(R_GC[i].nodes.data(), key = lambda x: -x[1]['current']))][0:largo]
 #%%
-percent = np.linspace(0,0.99,100)
+percent = np.linspace(0,1,10)
 tamaños = np.empty((len(R_GC),len(percent),4),dtype= object) #aca voy a poner el tamaño de la componente gigante del grafo en cada caso, con los valores de cada red en columnas
                                              #osea que la primera columna tendra el tamaño de la componente gigante habiendo sacado nada, 005% etc...
 for i in range(len(R_GC)):
