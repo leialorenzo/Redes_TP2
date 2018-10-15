@@ -91,15 +91,31 @@ def ploteo(diccionario):
     return plt.plot(x,y,'.'), plt.plot(x_lista,fit_fn(x_lista),'--'),print((m,b))
 
 ploteo(dicc_y2h)
+plt.xlabel('K (grado)')
+plt.ylabel('$ln$ (1-$P_e$)')
+plt.title("Binaria")
+plt.grid(True)
 plt.show()
 
 ploteo(dicc_lit)
+plt.xlabel('K (grado)')
+plt.ylabel('$ln$ (1-$P_e$)')
+plt.title("Literatura")
+plt.grid(True)
 plt.show()
 
 ploteo(dicc_apms)
+plt.xlabel('K (grado)')
+plt.ylabel('$ln$ (1-$P_e$)')
+plt.title("Proteica (APMS)")
+plt.grid(True)
 plt.show()
 
 ploteo(dicc_reg)
+plt.xlabel('K (grado)')
+plt.ylabel('$ln$ (1-$P_e$)')
+plt.title("Literatura Reguly")
+plt.grid(True)
 plt.show()
 
 
